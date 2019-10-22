@@ -1,0 +1,76 @@
+#include<iostream>
+#include<stdio.h>
+#include<stdlib.h>
+#include<time.h>
+#include<omp.h>
+using namespace std;
+
+int main()
+{
+	int n;
+	//omp_set_num_threads(256);
+	cout<<"\nEnter size of n*n Array\n";
+	cin>>n;
+	int a[n][n] , b[n][n] ,c[n][n];
+	for(int i=0 ; i <n ; i++)
+	{
+		for(int j = 0 ; j <n ;j++)
+		{
+			a[i][j] = rand()%100;
+			b[i][j] = rand()%100;
+			c[i][j] = 0;
+		}
+	}
+	
+	cout<<"\nPARALLEL\n";
+	double start , end , time;
+	start = omp_get_wtime();
+	int i,j,k;
+	#pragma omp parallel for
+	for(i = 0 ; i < n ; i ++)
+	{
+		#pragma omp parallel for
+		for(j = 0 ; j<n ; j++)
+		{
+			c[i][i] = 0;
+			#pragma omp parallel for
+			for(k = 0 ; k < n ; k++)
+			{
+				c[i][j] += a[i][k]*b[k][j];
+			} 
+		}
+	}
+	
+	cout<<"\n Matrix \n";
+	for(int i = 0 ; i < n ; i++)
+	{
+		for(int j = 0 ; j <n;j++)
+		{
+			cout<<c[i][j]<<"\t";
+		}
+		cout<<endl;
+	} 
+	end = omp_get_wtime();
+	time = (double)(end-start);
+	cout<<"\n Time for parallel : "<<time<<endl;
+	
+	cout<<"\nSERIAL\n";
+	clock_t c1 = clock(); 
+	for(int i = 0 ; i < n ; i ++)
+	{
+		for(int j = 0 ; j<n ; j++)
+		{
+			c[i][i] = 0;
+			for(int k = 0 ; k < n ; k++)
+			{
+				c[i][j] += a[i][k]*b[k][j];
+			} 
+		}
+	}
+	float t = (float)(clock() - c1)/CLOCKS_PER_SEC;
+	cout<<"\n Time for serial : "<<t<<endl;
+	return 0;
+}
+
+//g++ binarysearch.cpp -fopenmp -o bs/
+//	./bs
